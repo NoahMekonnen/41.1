@@ -1,6 +1,8 @@
 /** User class for message.ly */
 
 const { DB_URI } = require("../config");
+const db= require('../db')
+const jwt = require("jsonwebtoken");
 
 
 
@@ -16,8 +18,8 @@ class User {
 
     const result = await db.query(`
                     INSERT INTO users 
-                    (username, password, first_name, last_name, phone)
-                    VALUES ($1,$2,$3,$4,$5)
+                    (username, password, first_name, last_name, phone, join_at)
+                    VALUES ($1,$2,$3,$4,$5,current_timestamp)
                     RETURNING username, password, first_name, last_name, phone `,
       [username, password, first_name, last_name, phone])
     return result.rows[0]
@@ -29,7 +31,6 @@ class User {
     const result = await db.query(`
     SELECT * FROM users
     WHERE username=$1
-    RETURNING password
     `,[username])
     if (result){
     const databasePassword = result.rows[0]
