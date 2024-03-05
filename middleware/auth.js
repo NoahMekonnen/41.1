@@ -40,10 +40,39 @@ function ensureCorrectUser(req, res, next) {
     return next({ status: 401, message: "Unauthorized" });
   }
 }
+
+function ensureCorrectDMUsers(req, res, next){
+  try{
+    if (req.user.from_username === req.params.username | req.user.to_username === req.params.username){
+      return next()
+    }else {
+      return next({ status: 401, message: "Unauthorized" });
+    }
+  } catch (err) {
+    // errors would happen here if we made a request and req.user is undefined
+    return next({ status: 401, message: "Unauthorized" });
+  }
+}
+
+function ensureRecipient(req, res, next){
+  try{
+    if (req.user.to_username == req.params.username){
+      return next()
+    }else{
+      return next({ status: 401, message: "Unauthorized" });
+    }
+  } catch (err) {
+    // errors would happen here if we made a request and req.user is undefined
+    return next({ status: 401, message: "Unauthorized" });
+  }
+}
+
 // end
 
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
-  ensureCorrectUser
+  ensureCorrectUser,
+  ensureCorrectDMUsers,
+  ensureRecipient
 };
