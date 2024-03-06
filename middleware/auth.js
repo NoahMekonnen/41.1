@@ -2,14 +2,13 @@
 
 const jwt = require("jsonwebtoken");
 const { SECRET_KEY } = require("../config");
-const { specialPassword }= require("../routes/auth")
 const User = require("../models/user")
 
 /** Middleware: Authenticate user. */
 
 function authenticateJWT(req, res, next) {
   try {
-    const tokenFromBody = specialPassword;
+    const tokenFromBody = req.body._token;
     console.log(SECRET_KEY,tokenFromBody,"authenti group")
     const payload = jwt.verify(tokenFromBody, SECRET_KEY);
     req.user = payload; // create a current user
