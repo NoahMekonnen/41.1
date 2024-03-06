@@ -3,19 +3,23 @@ const router = new express.Router();
 const User = require("../models/user");
 const {SECRET_KEY} = require("../config")
 const jwt = require('jsonwebtoken')
-
+let specialPassword;
 /** POST /login - login: {username, password} => {token}
  *
  * Make sure to update their last-login!
  *
  **/
-router.post('/login', (req, res, next) => {
+router.post('/login', async (req, res, next) => {
     try {
         const { username, password} = req.body
-        User.authenticate(username, password)
-        return jwt.sign(req.body,SECRET_KEY)
+        await User.authenticate(username, password)
+        const token = jwt.sign({ username: username }, SECRET_KEY)
+        specialPassword = token
+        const user = await User.get(username)
+        await User.updateLoginTimestamp(user)
+        return res.json({token})
     } catch (e) {
-        next(e)
+        return next(e)
     }
 })
 
@@ -26,13 +30,17 @@ router.post('/login', (req, res, next) => {
  *  Make sure to update their last-login!
  */
 
-router.post('/register', (req, res, next) => {
+router.post('/register', async (req, res, next) => {
     try {
-        User.register(req.body)
-        return jwt.sign(req.body,SECRET_KEY)
+        
+        await User.register(req.body)
+        await User.authenticate(req.body.username, req.body.password)
+        
+        const token = jwt.sign({"username": req.body.username},SECRET_KEY)
+        return res.json({token})
     } catch (e) {
-        next(e)
+        return next(e)
     }
 })
 
-module.exports = router;
+module.exports = {router, specialPassword};

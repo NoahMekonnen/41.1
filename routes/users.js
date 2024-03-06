@@ -8,9 +8,9 @@ const User = require("../models/user");
  * => {users: [{username, first_name, last_name, phone}, ...]}
  *
  **/
-router.get('/',ensureLoggedIn, (req,res,next) =>{
+router.get('/',ensureLoggedIn, async (req,res,next) =>{
     try{
-        return res.json({users:User.all()})
+        return res.json({users:await User.all()})
     }catch(e){
         return next(e)
     }
@@ -21,9 +21,9 @@ router.get('/',ensureLoggedIn, (req,res,next) =>{
  * => {user: {username, first_name, last_name, phone, join_at, last_login_at}}
  *
  **/
-router.get('/:username',ensureLoggedIn,ensureCorrectUser, (req,res,next)=>{
+router.get('/:username',ensureLoggedIn,ensureCorrectUser, async (req,res,next)=>{
     try{
-        return res.json({user:User.get(req.params.username)})
+        return res.json({user:await User.get(req.params.username)})
     }catch(e){
         return next(e)
     }
@@ -38,9 +38,9 @@ router.get('/:username',ensureLoggedIn,ensureCorrectUser, (req,res,next)=>{
  *                 from_user: {username, first_name, last_name, phone}}, ...]}
  *
  **/
-router.get('/:username/to',ensureLoggedIn,ensureCorrectUser, (req,res,next)=>{
+router.get('/:username/to',ensureLoggedIn,ensureCorrectUser, async (req,res,next)=>{
     try{
-        return res.json({messages:User.messagesTo()})
+        return res.json({messages:await User.messagesTo()})
     }catch(e){
         return next(e)
     }
@@ -56,9 +56,9 @@ router.get('/:username/to',ensureLoggedIn,ensureCorrectUser, (req,res,next)=>{
  *
  **/
 
-router.get('/:username/from',ensureLoggedIn,ensureCorrectUser, (req,res,next) =>{
+router.get('/:username/from',ensureLoggedIn,ensureCorrectUser, async (req,res,next) =>{
     try{
-        return res.json({messages:User.messagesFrom()})
+        return res.json({messages:await User.messagesFrom()})
     }catch(e){
         return next(e)
     }

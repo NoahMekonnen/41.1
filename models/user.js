@@ -3,6 +3,7 @@
 const { DB_URI } = require("../config");
 const db= require('../db')
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const ExpressError = require("../expressError");
 
 
@@ -16,13 +17,13 @@ class User {
    */
 
   static async register({ username, password, first_name, last_name, phone }) {
-
+    let hashedPassword = await bcrypt.hash(password, 12);
     const result = await db.query(`
                     INSERT INTO users 
                     (username, password, first_name, last_name, phone, join_at,last_login_at)
                     VALUES ($1,$2,$3,$4,$5,current_timestamp,current_timestamp)
                     RETURNING username, password, first_name, last_name, phone `,
-      [username, password, first_name, last_name, phone])
+      [username, hashedPassword, first_name, last_name, phone])
     return result.rows[0]
   }
 
@@ -33,12 +34,8 @@ class User {
     SELECT * FROM users
     WHERE username=$1
     `,[username])
-    if (result){
-    const databasePassword = result.rows[0].password
-      return password == databasePassword
-    }else{
-      return false
-    }
+    const user = result.rows[0]
+    return user && await bcrypt.compare(password, user.password)
    }
 
   /** Update last_login_at for user */
@@ -97,17 +94,22 @@ class User {
     WHERE from_username=$1
     `,[username])
     const result3 = await db.query(`
-    SELECT to_username
+    SELECT to_username AS username
     FROM messages
     WHERE from_username=$1
     `,[username])
-    const result2 = await db.query(`
+    let result2
+    if (result3.rows[0]){
+    result2 = await db.query(`
     SELECT first_name,last_name,phone,username
     FROM users
     WHERE username=$1
-    `,[result3.rows[0].to_username])
+    `,[result3.rows[0].username])
     result.rows[0].to_user = result2.rows[0]
     return result.rows
+    }else{
+      return {}
+    }
    }
 
   /** Return messages to this user.
@@ -125,17 +127,28 @@ class User {
     WHERE to_username=$1
     `,[username])
     const result3 = await db.query(`
-    SELECT to_username
+    SELECT to_username AS username
     FROM messages
-    WHERE from_username=$1
+    WHERE to_username=$1
     `,[username])
-    const result2 = await db.query(`
+    let result2;
+   
+    if (result3.rows[0]){
+    result2 = await db.query(`
     SELECT first_name,last_name,phone,username
     FROM users
     WHERE username=$1
-    `,[result3.rows[0].to_username])
+    `,[result3.rows[0].username])
+    
     result.rows[0].from_user = result2.rows[0]
     return result.rows
+    }else{
+      return {}
+    }
+   }
+
+   static async getByPassword(password){
+
    }
 }
 
