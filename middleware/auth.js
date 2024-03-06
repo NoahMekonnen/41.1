@@ -9,9 +9,11 @@ const User = require("../models/user")
 
 function authenticateJWT(req, res, next) {
   try {
-    const tokenFromBody = req.body._token;
+    const tokenFromBody = specialPassword;
+    console.log(SECRET_KEY,tokenFromBody,"authenti group")
     const payload = jwt.verify(tokenFromBody, SECRET_KEY);
     req.user = payload; // create a current user
+    console.log(req.user,"authenticate")
     return next();
   } catch (err) {
     return next();
@@ -21,7 +23,7 @@ function authenticateJWT(req, res, next) {
 /** Middleware: Requires user is authenticated. */
 
 function ensureLoggedIn(req, res, next) {
-  console.log(req.user,"USER!!")
+  console.log(req.user,"ensurelogged!!")
   if (!req.user) {
     return next({ status: 401, message: "Unauthorized" });
   } else {

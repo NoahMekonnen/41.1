@@ -3,6 +3,7 @@ const router = new express.Router();
 const Message = require("../models/message");
 const { ensureLoggedIn, ensureCorrectDMUsers, ensureRecipient } = require("../middleware/auth");
 const ExpressError = require("../expressError");
+const { BCRYPT_WORK_FACTOR } = require("../config");
 
 /** GET /:id - get detail of message.
  *
@@ -18,6 +19,7 @@ const ExpressError = require("../expressError");
  **/
 router.get("/:id",ensureLoggedIn, async (req,res,next) =>{
     try{
+        console.log(req.user,"message token")
         let username = req.message.username;
     let msg = await Message.get(req.params.id);
 
