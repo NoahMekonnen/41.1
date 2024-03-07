@@ -24,6 +24,13 @@ describe("Test Message class", function () {
       last_name: "Testy2",
       phone: "+14155552222",
     });
+    let u3 = await User.register({
+      username: "test3",
+      password: "password",
+      first_name: "Test3",
+      last_name: "Testy3",
+      phone: "+14155553333",
+    });
     let m1 = await Message.create({
       from_username: "test1",
       to_username: "test2",

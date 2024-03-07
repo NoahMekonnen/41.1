@@ -127,10 +127,10 @@ describe("Test messages part of User class", function () {
       sent_at: expect.any(Date),
       read_at: null,
       from_user: {
-        username: "test2",
-        first_name: "Test2",
-        last_name: "Testy2",
-        phone: "+14155552222",
+        username: "test1",
+        first_name: "Test1",
+        last_name: "Testy1",
+        phone: "+14155550000",
       }
     }]);
   });

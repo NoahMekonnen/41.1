@@ -1,9 +1,10 @@
 const express = require("express")
 const router = new express.Router();
 const User = require("../models/user");
-const {SECRET_KEY} = require("../config")
+const { SECRET_KEY } = require("../config")
 const jwt = require('jsonwebtoken')
-let specialPassword;
+const ExpressError = require("../expressError");
+
 /** POST /login - login: {username, password} => {token}
  *
  * Make sure to update their last-login!
@@ -11,14 +12,14 @@ let specialPassword;
  **/
 router.post('/login', async (req, res, next) => {
     try {
-        const { username, password} = req.body
-        await User.authenticate(username, password)
-        const token = jwt.sign({ username: username }, SECRET_KEY)
-        specialPassword = token
-        console.log(token,"Login Token")
-        const user = await User.get(username)
-        await User.updateLoginTimestamp(user)
-        return res.json({token})
+        let { username, password } = req.body
+        if (await User.authenticate(username, password)) {
+            let token = jwt.sign({ username }, SECRET_KEY)
+            await User.updateLoginTimestamp(username)
+            return res.json({ token })
+        } else {
+            throw new ExpressError("Invalid username/password", 400);
+        }
     } catch (e) {
         return next(e)
     }
@@ -33,16 +34,13 @@ router.post('/login', async (req, res, next) => {
 
 router.post('/register', async (req, res, next) => {
     try {
-        
-        await User.register(req.body)
-        await User.authenticate(req.body.username, req.body.password)
-        const token = jwt.sign({"username": req.body.username},SECRET_KEY)
-        console.log(token,"Login Token")
-        specialPassword = token
-        return res.json({token})
+        let {username} = await User.register(req.body);
+        const token = jwt.sign({ username }, SECRET_KEY)
+        User.updateLoginTimestamp(username)
+        return res.json({ token })
     } catch (e) {
         return next(e)
     }
 })
 
-module.exports = {router, specialPassword};
+module.exports = router;
